@@ -180,6 +180,8 @@ C<$self-E<gt>wrap_data> yourself.
 We support the following additional field options, over what is
 inherited from L<HTML::FormHandler::Field>
 
+=over
+
 =item data
 
 Scalar (hashref or arrayref) holding the data to be encoded as JSON.
@@ -208,6 +210,8 @@ values are passed to L<JSON> when encoding the data.
 =head1 FIELD METHODS
 
 The following methods can be called on the field.
+
+=over
 
 =item deflator
 

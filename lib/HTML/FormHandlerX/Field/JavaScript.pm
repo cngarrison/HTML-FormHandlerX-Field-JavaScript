@@ -132,6 +132,8 @@ are responsible for calling C<$self-E<gt>wrap_data> yourself.
 We support the following additional field options, over what is inherited from
 L<HTML::FormHandler::Field>
 
+=over
+
 =item js_code
 
 String containing the JavaScript code to be rendered inside script tags.
@@ -149,6 +151,8 @@ Boolean to indicate whether code should be minified using L<JavaScript::Minifier
 =head1 FIELD METHODS
 
 The following methods can be called on the field.
+
+=over
 
 =item wrap_js_code
 
