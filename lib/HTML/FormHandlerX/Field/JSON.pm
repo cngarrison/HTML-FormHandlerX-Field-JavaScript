@@ -126,7 +126,7 @@ __END__
  
 This class can be used for fields that need to supply JSON data for use
 by scripts in the form. It will JSONify and render the value returned by
-a form's C<data_[field_name]> method, or the field's C<data> attribute.
+a form's C<data_E<lt>field_nameE<gt>> method, or the field's C<data> attribute.
  
   has_field 'user_addresses' => ( type => 'JSON',
      data => { john => 'john@example.com', sarah => 'sarah@example.com' } );
@@ -149,7 +149,7 @@ or using a method:
       return [ qw'john sarah' ];
   }
  
-or set the name of the rendering method:
+or set the name of the data generation method:
  
    has_field 'user_addresses' => ( type => 'JSON', set_data => 'my_user_addresses' );
    sub my_user_addresses {
@@ -162,23 +162,103 @@ or provide a 'render_method':
    sub render_user_addresses {
        my $self = shift;
        ....
-       return '...';
+       return q(
+   <script type="text/javascript">
+     // JSON assignment here
+     var myVar = 'abc';
+   </script>);
    }
 
-=head2 variable names
+The data generation methods should return a scalar (hashref or
+arrayref), which will be encoded as JSON, given a variable assignment,
+and wrapped in script tags. If you supply your own 'render_method' then
+you are responsible for calling C<$self-E<gt>deflator> or
+C<$self-E<gt>wrap_data> yourself.
+
+=head1 FIELD OPTIONS
+
+We support the following additional field options, over what is
+inherited from L<HTML::FormHandler::Field>
+
+=item data
+
+Scalar (hashref or arrayref) holding the data to be encoded as JSON.
+
+=item set_data
+
+Name of method that gets called to generate the data.
+
+=item data_key
+
+Name of JavaScript variable that will be assigned the JSON object. See
+L</"JavaScript variable names">
+
+=item do_minify
+
+Boolean to indicate whether code should be minified using
+L<JavaScript::Minifier::XS>
+
+=item json_opts
+
+Hashref with 3 possible keys; C<pretty>, C<relaxed>, C<canonical>. The
+values are passed to L<JSON> when encoding the data.
+
+=back
+
+=head1 FIELD METHODS
+
+The following methods can be called on the field.
+
+=item deflator
+
+The C<deflator> method is called to encode the C<data> as JSON. The
+C<json_opts> attribute is used to control options for JSON encode.
+
+=item wrap_data
+
+The C<wrap_data> method calls C<$self-E<gt>deflator>, sets the variable
+assignment using the JSON object, minifies the code, and wraps the code
+in script tags.
+
+=back
+
+
+=head1 JavaScript variable names
 
 By default, the name of the variable being assigned is same as the field
 name. The variable name can be changed with the data_key attribute. If
-the data_key value is simple string (no dot separator) then the variable
-will be created with C<var varName;>, otherwise it is assumed the
-variable is already defined.
+the field name (or data_key value) is a simple string (no dot separator)
+then the variable will be defined with C<var varName;>:
+
+  has_field 'user_addresses' => ( type => 'JSON',
+  	data => [ qw'john@acme.org sarah@acme.org' ],
+   );
+
+will render as:
+
+  <script type="text/javascript">
+	var user_addresses = [ "john@acme.org", "sarah@acme.org" ];
+  </script>);
+
+Otherwise it is assumed the variable is already defined:
+
+  has_field 'user_addresses' => ( type => 'JSON',
+  	data_key => 'user_addresses.names',
+  	data => [ qw'john sarah' ],
+   );
+
+will render as:
+
+  <script type="text/javascript">
+	user_addresses.names = [ "john", "sarah" ];
+  </script>);
 
 The data_key can begin or end with a dot, in which case the field name
 is either appended or prepended to the data_key.
 
   has_field 'user_addresses' => ( type => 'JSON',
-  		data_key => '.email',
-  		data_ => [ qw'john@acme.org sarah@acme.org' ],
+  	data_key => '.email',
+  	data => [ qw'john@acme.org sarah@acme.org' ],
    );
 
 Will render as:
@@ -186,20 +266,5 @@ Will render as:
   <script type="text/javascript">
 	user_addresses.email = [ "john@acme.org", "sarah@acme.org" ];
   </script>);
-
-=head1 FIELD OPTIONS
-
-We support the following additional field options, over what is inherited from
-L<HTML::FormHandler::Field>
-
-=head2 do_minify
-
-Boolean to indicate whether code should be minified using L<JavaScript::Minifier::XS>
-
-=head2 json_opts
-
-Hashref with 3 possible keys; C<pretty>, C<relaxed>, C<canonical>. The
-values are passed to L<JSON> when encoding the data.
-
 
 =cut

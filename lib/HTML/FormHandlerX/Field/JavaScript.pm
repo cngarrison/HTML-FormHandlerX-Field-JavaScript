@@ -77,8 +77,8 @@ __END__
 =head1 SYNOPSIS
  
 This class can be used for fields that need to supply JavaScript code
-for use by scripts in the form. It will render the value returned by a
-form's C<js_code_[field_name]> method, or the field's C<js_code>
+to control or modify the form. It will render the value returned by a
+form's C<js_code_E<lt>field_nameE<gt>> method, or the field's C<js_code>
 attribute.
  
   has_field 'user_update' => ( type => 'JavaScript',
@@ -90,7 +90,7 @@ or using a method:
   has_field 'user_update' => ( type => 'JavaScript' );
   sub js_code_user_update {
      my ( $self, $field ) = @_;
-     if( $self->something ) {
+     if( $field->value == 'foo' ) {
         return q`$('#fldId').on('change', myFunction);`;
      }
      else {
@@ -104,7 +104,7 @@ or using a method:
       return q`$('#fldId').on('change', myFunction);`;
   }
  
-or set the name of the rendering method:
+or set the name of the code generation method:
  
    has_field 'user_update' => ( type => 'JavaScript', set_js_code => 'my_user_update' );
    sub my_user_update {
@@ -118,18 +118,42 @@ or provide a 'render_method':
        my $self = shift;
        ....
        return q(
-<script type="text/javascript">
-  // code here
-</script>);
+   <script type="text/javascript">
+     // code here
+   </script>);
    }
+
+The code generation methods should return a scalar string which will be
+wrapped in script tags. If you supply your own 'render_method' then you
+are responsible for calling C<$self-E<gt>wrap_data> yourself.
 
 =head1 FIELD OPTIONS
 
 We support the following additional field options, over what is inherited from
 L<HTML::FormHandler::Field>
 
-=head2 do_minify
+=item js_code
+
+String containing the JavaScript code to be rendered inside script tags.
+
+=item set_js_code
+
+Name of method that gets called to generate the JavaScript code.
+
+=item do_minify
 
 Boolean to indicate whether code should be minified using L<JavaScript::Minifier::XS>
+
+=back
+
+=head1 FIELD METHODS
+
+The following methods can be called on the field.
+
+=item wrap_js_code
+
+The C<wrap_js_code> method minifies the JavaScript code and wraps it in script tags.
+
+=back
 
 =cut
