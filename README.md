@@ -4,7 +4,7 @@ HTML::FormHandlerX::Field::JavaScript - a script tag with javascript code suppli
 
 # VERSION
 
-version 0.003
+version 0.004
 
 # SYNOPSIS
 
