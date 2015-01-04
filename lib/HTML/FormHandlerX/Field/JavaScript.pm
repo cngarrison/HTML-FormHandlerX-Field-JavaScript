@@ -35,6 +35,8 @@ sub build_render_method {
 
 	my $set_js_code = $self->set_js_code;
 	$set_js_code ||= "js_code_" . HTML::FormHandler::Field::convert_full_name( $self->full_name );
+	return sub { my $self = shift; $self->wrap_js_code( $self->parent->$set_js_code($self) ); }
+	  if ( $self->parent->has_flag('is_compound') && $self->parent->can($set_js_code) );
 	return sub { my $self = shift; $self->wrap_js_code( $self->form->$set_js_code($self) ); }
 	  if ( $self->form && $self->form->can($set_js_code) );
 	return sub {

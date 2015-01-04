@@ -39,6 +39,8 @@ sub build_render_method {
 
 	my $set_data = $self->set_data;
 	$set_data ||= "data_" . HTML::FormHandler::Field::convert_full_name( $self->full_name );
+	return sub { my $self = shift; $self->wrap_data( $self->parent->$set_data($self) ); }
+	  if ( $self->parent->has_flag('is_compound') && $self->parent->can($set_data) );
 	return sub { my $self = shift; $self->wrap_data( $self->form->$set_data($self) ); }
 	  if ( $self->form && $self->form->can($set_data) );
 	return sub {
